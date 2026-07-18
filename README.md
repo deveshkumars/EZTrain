@@ -23,8 +23,8 @@ main.py --train
 ## Setup
 
 ```bash
-git clone --recurse-submodules https://github.com/deveshkumars/dronetrain
-cd dronetrain
+git clone --recurse-submodules https://github.com/deveshkumars/EZTrain
+cd EZTrain
 uv sync
 ```
 
@@ -39,6 +39,20 @@ Train then evaluate (full run — sized for a CUDA GPU):
 ```bash
 uv run main.py --train --eval
 ```
+
+On a Slurm cluster (e.g. Oscar), never train on a login node — submit the job
+to a GPU node instead:
+
+```bash
+sbatch run_gpu_full.sh   # L40S, ~3–5 min for a 10M-step run
+```
+
+The default config trains 1M timesteps; the reward for the hover task keeps
+climbing well past that. `--timesteps 10000000` reaches the reward plateau
+(~395 of a ~400 ceiling). Longer is not better: a 20M-step run was observed to
+collapse in its final ~1M steps, and brax saves the *final* weights, not the
+best — always check that the last point of `plots/train.png` is still on the
+plateau before trusting the saved policy.
 
 Full training is designed for a CUDA GPU (Linux cluster). On a CPU-only laptop,
 XLA compilation of the PPO training step needs more memory than most machines
@@ -76,7 +90,19 @@ dependency-free C implementation of the policy MLP), and installs it as
 
 ## Building and flashing the firmware
 
-See `firmware/ai_drone_firmware/README.MD`. Short version:
+On the machine with the Crazyradio PA dongle attached (not the cluster):
+
+```bash
+./deploy_to_drone.sh               # preflight checks, build, prompt, flash
+./deploy_to_drone.sh --build-only  # just produce build/cf2.bin
+CF_URI=radio://0/80/2M ./deploy_to_drone.sh   # override radio URI
+```
+
+Needs `arm-none-eabi-gcc`, `cfloader` (`pip install cfclient`), and git-lfs.
+First flight: use a net/cage and keep cfclient connected as a kill switch —
+the policy is trained purely in simulation.
+
+Manual steps (what the script does — see also `firmware/ai_drone_firmware/README.MD`):
 
 ```bash
 cd firmware/ai_drone_firmware
@@ -117,8 +143,10 @@ params = brax_model_io.load_params('models/mjx_brax_policy/policy')
 ## Project structure
 
 ```
-dronetrain/
+EZTrain/
 ├── main.py                    # CLI entrypoint + train→firmware workflow
+├── deploy_to_drone.sh         # Build + flash firmware onto a Crazyflie
+├── run_gpu_full.sh            # sbatch script for GPU training on the cluster
 ├── dtcore/
 │   ├── simple_env.py          # SimpleEnv (hover at 1 m), brax env registration
 │   └── trainer.py             # PPO training/eval, param saving, plotting

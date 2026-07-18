@@ -17,6 +17,10 @@ git submodule update --init --recursive   # required once; ai_drone_firmware nee
 # Full training run (sized for CUDA GPU / cluster)
 uv run main.py --train --eval
 
+# On the Oscar cluster: NEVER run training/JAX on a login node (vscode1 etc.) —
+# submit to a GPU node via Slurm and poll with squeue/sacct
+sbatch run_gpu_full.sh    # L40S; a 10M-timestep run takes ~3-5 min
+
 # CPU/laptop pipeline smoke test (full training on CPU dies in XLA compile — see gotchas)
 uv run main.py --train --eval --timesteps 0 --num_envs 16 --batch_size 32 --num_evals 2 --steps 50
 
@@ -26,7 +30,16 @@ uv run main.py --eval --steps 200 --video gifs/simple_train.mp4
 
 There are no tests or linters configured. Verification is running the pipeline and checking artifacts (`models/<dir>/params.pkl`, `weights_to_firmware/output_model/network_evaluate.c`, `firmware/ai_drone_firmware/network_evaluate.h`, `plots/train.png`, the eval video).
 
-Firmware compile/flash (optional, needs `arm-none-eabi-gcc` + hardware): see `firmware/ai_drone_firmware/README.MD`.
+Firmware compile/flash (optional, needs `arm-none-eabi-gcc` + hardware): `./deploy_to_drone.sh` on the machine with the Crazyradio; details in `firmware/ai_drone_firmware/README.MD`.
+
+### Training length matters
+
+brax saves the *final* params, not the best. On this task reward plateaus at ~395
+(ceiling ~400) by ~5M timesteps; a 20M run was observed to collapse to ~60 in its
+last ~1M steps, silently shipping a broken policy through the whole firmware chain.
+Use ~10M timesteps and always verify the *last* point of `plots/train.png` is still
+on the plateau (and that the drone stays in frame in the eval video) before trusting
+`params.pkl`.
 
 ## Architecture
 
@@ -50,3 +63,4 @@ Firmware compile/flash (optional, needs `arm-none-eabi-gcc` + hardware): see `fi
 - `trainer.py` sets `JAX_COMPILATION_CACHE_DIR=~/.cache/dronetrain-xla` (setdefault) so repeat compiles are fast. Delete that directory if compile artifacts seem stale.
 - The repo was once copied between machines chmod-ing everything; `core.fileMode false` is set in the repo and submodules. Don't "fix" phantom mode-only diffs.
 - `firmware/ai_drone_firmware` requires git-lfs (`brew install git-lfs && git lfs install`) or git operations inside it fail.
+- Generated artifacts land *inside* the two submodules (`network_evaluate.h`, `input_model/`, `output_model/`). To publish a new policy: commit on each submodule's `main` (they sit on detached HEADs matching `main`) and push, then commit the pointer bumps in the parent. From Oscar the parent's SSH remote fails to auth — push with `git push https://github.com/deveshkumars/EZTrain.git master`.
