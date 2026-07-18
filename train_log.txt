@@ -1,0 +1,41 @@
+srun: No max_nodes specified, defaulting to -N 1
+srun: job 4078732 queued and waiting for resources
+srun: job 4078732 has been allocated resources
++ module load ffmpeg
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ cd /oscar/scratch/dkumar23/EZTrain
++ nvidia-smi -L
+GPU 0: NVIDIA L40S (UUID: GPU-f778934a-7bdf-d499-3895-1cff2c7b521b)
++ uv run main.py --train --eval
+/oscar/scratch/dkumar23/EZTrain/.venv/lib/python3.11/site-packages/brax/io/mjcf.py:480: UserWarning: Brax System, piplines and environments are not actively being maintained. Please see MJX for a well maintained JAX-based physics engine: https://github.com/google-deepmind/mujoco/tree/main/mjx. For a host of environments that use MJX, see: https://github.com/google-deepmind/mujoco_playground.
+  warnings.warn(
+2026-07-17 23:28:22.171041: W external/xla/xla/service/gpu/autotuning/dot_search_space.cc:200] All configs were filtered out because none of them sufficiently match the hints. Maybe the hints set does not contain a good representative set of valid configs?Working around this by using the full hints set instead.
+2026-07-17 23:29:23.428285: W external/xla/xla/service/gpu/autotuning/dot_search_space.cc:200] All configs were filtered out because none of them sufficiently match the hints. Maybe the hints set does not contain a good representative set of valid configs?Working around this by using the full hints set instead.
+2026-07-17 23:30:12.358920: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1784345412.559887  257729 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1784345412.624690  257729 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1784345413.157253  257729 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1784345413.157317  257729 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1784345413.157320  257729 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1784345413.157323  257729 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+I0000 00:00:1784345440.410938  257729 gpu_device.cc:2019] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 9223 MB memory:  -> device: 0, name: NVIDIA L40S, pci bus id: 0000:41:00.0, compute capability: 8.9
+/oscar/scratch/dkumar23/EZTrain/.venv/lib/python3.11/site-packages/brax/io/mjcf.py:480: UserWarning: Brax System, piplines and environments are not actively being maintained. Please see MJX for a well maintained JAX-based physics engine: https://github.com/google-deepmind/mujoco/tree/main/mjx. For a host of environments that use MJX, see: https://github.com/google-deepmind/mujoco_playground.
+  warnings.warn(
+Using default model XML: /oscar/scratch/dkumar23/EZTrain/submodules/Custom-Crazyflie-Mujoco-Model/scene_mjx.xml
+Copying model file to weights_to_firmware input_model folder...
+Copied params.pkl to /oscar/scratch/dkumar23/EZTrain/weights_to_firmware/input_model/params.pkl
+Generating C code from params.pkl...
+Extracting parameters from file /oscar/scratch/dkumar23/EZTrain/weights_to_firmware/input_model/params.pkl ...
+C code generated successfully: /oscar/scratch/dkumar23/EZTrain/weights_to_firmware/output_model/network_evaluate.c
+C code generation completed.
+Copied network_evaluate.c to /oscar/scratch/dkumar23/EZTrain/firmware/ai_drone_firmware/network_evaluate.h
+Complete workflow finished successfully!
