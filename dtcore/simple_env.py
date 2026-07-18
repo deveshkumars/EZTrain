@@ -1,3 +1,4 @@
+import os
 from typing import Any
 import jax
 from jax import numpy as jnp
@@ -5,6 +6,22 @@ import mujoco
 from brax import envs, math
 from brax.envs.base import PipelineEnv, State
 from brax.io import mjcf
+
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_MODEL_XML_PATH = os.path.join(
+    _REPO_ROOT, 'submodules', 'Custom-Crazyflie-Mujoco-Model', 'scene_mjx.xml'
+)
+
+
+def default_model_xml_path() -> str:
+    """Path to the default Crazyflie MJX scene, with a helpful error if missing."""
+    if not os.path.exists(DEFAULT_MODEL_XML_PATH):
+        raise FileNotFoundError(
+            f"Default scene_mjx.xml not found at: {DEFAULT_MODEL_XML_PATH}\n"
+            "Please ensure the Custom-Crazyflie-Mujoco-Model submodule is initialized:\n"
+            "git submodule update --init --recursive"
+        )
+    return DEFAULT_MODEL_XML_PATH
 
 
 class SimpleEnv(PipelineEnv):
@@ -20,11 +37,12 @@ class SimpleEnv(PipelineEnv):
         reward_distance_scale: float = 1.2,
         reward_effort_weight: float = 0.05,
         reward_action_smoothness_weight: float = 0.05,
-        model_xml_path: str = "/users/dkumar23/scratch/dronetrain/mujoco_menagerie/bitcraze_crazyflie_2/scene_mjx.xml",
+        model_xml_path: str | None = None,
         physics_steps: int = 5,
         **kwargs: Any,
     ):
-        # load your MJX model
+        if model_xml_path is None:
+            model_xml_path = default_model_xml_path()
         mj_model = mujoco.MjModel.from_xml_path(model_xml_path)
         mj_model.opt.solver = mujoco.mjtSolver.mjSOL_CG
         mj_model.opt.iterations = 10

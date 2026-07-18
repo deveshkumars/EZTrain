@@ -11,3 +11,9 @@ tflite-micro-deprecated/
 
 # Virtual environments
 .venv
+
+# macOS
+.DS_Store
+
+# Stray process output
+nohup.out
